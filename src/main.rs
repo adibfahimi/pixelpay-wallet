@@ -63,6 +63,8 @@ impl MyApp {
                     self.save();
                     self.message =
                         "Transaction sent, please wait 12 min for confirmation".to_string();
+                    self.target_amount = 0;
+                    self.target_address = String::from("");
                 } else {
                     self.message = "Transaction failed".to_string();
                 }

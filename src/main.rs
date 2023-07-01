@@ -3,7 +3,7 @@ mod config;
 mod tx;
 use config::save_config;
 use eframe::egui;
-use ureq;
+use ureq::{get, json, post};
 const NODE_URI: &str = "http://localhost:8080";
 extern crate clipboard;
 
@@ -12,24 +12,23 @@ use clipboard::ClipboardProvider;
 use config::{generate_config, load_config};
 
 struct MyApp {
-    wallet: i32,
+    wallet: u32,
     address: String,
     target_address: String,
-    target_amount: i32,
+    target_amount: u32,
     private_key: String,
     message: String,
 }
 
 impl MyApp {
     pub fn get_balance(&mut self) {
-        let resp = ureq::get(&format!("{}/balance/{}", NODE_URI, self.address))
+        let resp = get(&format!("{}/balance/{}", NODE_URI, self.address))
             .call()
             .unwrap()
             .into_string()
             .unwrap();
-
         let json = serde_json::from_str::<serde_json::Value>(&resp).unwrap();
-        self.wallet = json["balance"].as_i64().unwrap() as i32;
+        self.wallet = json["balance"].as_i64().unwrap() as u32;
         self.save();
     }
 
@@ -42,20 +41,19 @@ impl MyApp {
         self.get_balance();
 
         let timestamp = chrono::Utc::now().timestamp();
-        let mut new_tx = tx::Tx::new(
-            self.address.clone(),
-            self.target_address.clone(),
-            self.target_amount.clone(),
-            "".to_string(),
-            "".to_string(),
-            timestamp,
-        );
-
+        let mut new_tx = tx::Tx {
+            sender: self.address.clone(),
+            receiver: self.target_address.clone(),
+            amount: self.target_amount,
+            signature: "".to_string(),
+            hash: "".to_string(),
+            timestamp: timestamp as u64,
+        };
         new_tx.sign(self.private_key.clone());
 
-        let resp = ureq::post(&format!("{}/tx", NODE_URI))
+        let resp = post(&format!("{}/tx", NODE_URI))
             .set("Content-Type", "application/json")
-            .send_json(ureq::json!(&new_tx));
+            .send_json(json!(&new_tx));
 
         match resp {
             Ok(resp) => {
@@ -87,7 +85,7 @@ impl MyApp {
 
 impl Default for MyApp {
     fn default() -> Self {
-        let config = load_config().unwrap_or_else(|| generate_config());
+        let config = load_config().unwrap_or_else(generate_config);
         MyApp {
             wallet: config.wallet,
             address: config.address,
@@ -102,7 +100,7 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            if self.message != String::from("") {
+            if self.message != *"" {
                 egui::Window::new("Message").show(ui.ctx(), |ui| {
                     ui.label(self.message.clone());
 
@@ -125,7 +123,7 @@ impl eframe::App for MyApp {
 
             ui.horizontal(|ui| {
                 ui.label("Address: ");
-                ui.label(self.address.clone().to_string().split_at(15).0.to_owned() + "...");
+                ui.label(self.address.to_string().split_at(15).0.to_owned() + "...");
                 if ui.button("Copy").clicked() {
                     self.copy_address();
                 }

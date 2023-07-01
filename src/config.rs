@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
-    pub wallet: i32,
+    pub wallet: u32,
     pub address: String,
     pub private_key: String,
 }

@@ -40,6 +40,21 @@ impl MyApp {
     pub fn send(&mut self) {
         self.get_balance();
 
+        if self.target_address == *"" {
+            self.message = "Please enter a target address".to_string();
+            return;
+        }
+
+        if self.target_amount == 0 {
+            self.message = "Please enter an amount".to_string();
+            return;
+        }
+
+        if self.wallet < self.target_amount {
+            self.message = "Not enough balance".to_string();
+            return;
+        }
+
         let timestamp = chrono::Utc::now().timestamp();
         let mut new_tx = tx::Tx {
             sender: self.address.clone(),

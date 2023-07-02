@@ -20,10 +20,13 @@ impl eframe::App for MyApp {
                 });
             }
 
-            ui.heading("Pixelpay Wallet");
             ui.horizontal(|ui| {
-                ui.label("Wallet: ");
-                ui.label(format!("{} PXL", self.wallet));
+                ui.heading("Wallet: ");
+                ui.label(
+                    egui::RichText::new(format!("{} PXL", self.wallet))
+                        .heading()
+                        .color(egui::Color32::from_rgb(255, 255, 255)),
+                );
                 ui.horizontal(|ui| {
                     if ui.button("Refresh").clicked() {
                         self.get_balance();
@@ -33,7 +36,7 @@ impl eframe::App for MyApp {
 
             ui.horizontal(|ui| {
                 ui.label("Address: ");
-                ui.label(self.address.to_string().split_at(15).0.to_owned() + "...");
+                ui.label(self.address.to_string().split_at(25).0.to_owned() + "...");
                 if ui.button("Copy").clicked() {
                     self.copy_address();
                 }
@@ -74,3 +77,4 @@ fn main() -> Result<(), eframe::Error> {
         Box::new(|_cc| Box::<MyApp>::default()),
     )
 }
+

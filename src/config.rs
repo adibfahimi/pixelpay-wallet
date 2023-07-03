@@ -1,6 +1,7 @@
 use secp256k1::rand::rngs::OsRng;
 use secp256k1::Secp256k1;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
@@ -11,7 +12,8 @@ pub struct Config {
 }
 
 pub fn load_config() -> Option<Config> {
-    if let Ok(config_file) = std::fs::read_to_string("config.json") {
+    let config_path = get_config_path()?;
+    if let Ok(config_file) = std::fs::read_to_string(config_path) {
         if let Ok(config) = serde_json::from_str(&config_file) {
             return Some(config);
         }
@@ -31,7 +33,9 @@ pub fn generate_config() -> Config {
     };
 
     if let Ok(config_json) = serde_json::to_string_pretty(&config) {
-        std::fs::write("config.json", config_json).unwrap();
+        if let Some(config_path) = get_config_path() {
+            std::fs::write(config_path, config_json).unwrap();
+        }
     }
 
     config
@@ -39,6 +43,27 @@ pub fn generate_config() -> Config {
 
 pub fn save_config(config: &Config) {
     if let Ok(config_json) = serde_json::to_string_pretty(&config) {
-        std::fs::write("config.json", config_json).unwrap();
+        if let Some(config_path) = get_config_path() {
+            std::fs::write(config_path, config_json).unwrap();
+        }
     }
 }
+
+fn get_config_path() -> Option<PathBuf> {
+    let mut config_dir = dirs::home_dir()?;
+    config_dir.push(".config");
+    config_dir.push("pixelpay");
+    std::fs::create_dir_all(&config_dir).ok()?;
+    config_dir.push("config.json");
+    Some(config_dir)
+}
+
+#[cfg(target_os = "windows")]
+fn get_config_path() -> Option<PathBuf> {
+    let mut config_dir = dirs::config_dir()?;
+    config_dir.push("pixelpay");
+    std::fs::create_dir_all(&config_dir).ok()?;
+    config_dir.push("config.json");
+    Some(config_dir)
+}
+

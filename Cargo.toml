@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.26"
 clipboard = "0.5.0"
+dirs = "5.0.1"
 eframe = "0.22.0"
 env_logger = "0.10.0"
 hex = "0.4.3"

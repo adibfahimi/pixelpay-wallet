@@ -2,7 +2,7 @@
 
 ## Description
 
-send and recive PXL
+Send and receive PXL.
 
 ## Usage
 

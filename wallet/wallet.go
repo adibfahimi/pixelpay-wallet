@@ -17,7 +17,7 @@ type Wallet struct {
 	Balance    uint   `json:"balance"`
 }
 
-func generateWallet() Wallet {
+func generateWallet(nodeAddress string) Wallet {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +35,7 @@ func generateWallet() Wallet {
 
 	w := Wallet{
 		PrivateKey: hexutil.Encode(privateKeyBytes),
-		NodeUrl:    "http://127.0.0.1:3000",
+		NodeUrl:    nodeAddress,
 		Address:    address,
 		Balance:    0,
 	}
@@ -45,11 +45,11 @@ func generateWallet() Wallet {
 	return w
 }
 
-func LoadWallet() Wallet {
+func LoadWallet(nodeAddress string) Wallet {
 	_, err := os.Stat("./wallet.json")
 
 	if os.IsNotExist(err) {
-		return generateWallet()
+		return generateWallet(nodeAddress)
 	}
 
 	file, err := os.Open("./wallet.json")

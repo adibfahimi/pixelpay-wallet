@@ -30,5 +30,5 @@ func GetBalance(w *wallet.Wallet) {
 		log.Fatalf("an error occured while decoding response: %v", err)
 	}
 
-	fmt.Printf("Your balance is: %f PXL\n", res.Data.Amount)
+	w.Balance = uint(res.Data.Amount)
 }
